@@ -3,11 +3,11 @@ import pandas as pd
 import plotly.express as px
 
 # CSV 경로
-CSV_URL = "https://raw.githubusercontent.com/iissyyii/finalproject/main/gogo.csv"
+CSV_URL = "https://raw.githubusercontent.com/iissyyii/finalproject/main/gogogo.csv"
 
 @st.cache_data
 def load_data():
-    df = pd.read_csv(CSV_URL, encoding='euc-kr')  # 한글 인코딩
+    df = pd.read_csv(CSV_URL, encoding='utf-8')  # 한글 인코딩
     return df
 
 df = load_data()
