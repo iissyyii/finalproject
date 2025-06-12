@@ -7,7 +7,7 @@ CSV_URL = "https://raw.githubusercontent.com/iissyyii/finalproject/main/gogo.csv
 
 @st.cache_data
 def load_data():
-    df = pd.read_csv(CSV_URL, encoding='cp949')  # 한글 인코딩
+    df = pd.read_csv(CSV_URL, encoding='euc-kr')  # 한글 인코딩
     return df
 
 df = load_data()
