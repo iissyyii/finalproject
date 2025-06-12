@@ -2,61 +2,48 @@ import streamlit as st
 import pandas as pd
 import plotly.express as px
 
-# GitHub CSV URL로 교체하세요
-CSV_URL = "https://raw.githubusercontent.com/your-username/your-repo/main/gogo.csv"
-
+# CSV 경로
+CSV_URL = "https://raw.githubusercontent.com/iissyyii/finalproject/main/gogo.csv"
 
 @st.cache_data
 def load_data():
-    df = pd.read_csv(CSV_URL, encoding='cp949')
-    df_long = pd.DataFrame()
-
-    years = ['2016', '2018', '2020', '2022']
-    frequency_cols = {
-        '거의 매일': '.1',
-        '일주일에 1~2번': '.2',
-        '한 달에 1~2번': '.3',
-        '전혀 없음': '.4'
-    }
-
-    for year in years:
-        for freq_label, suffix in frequency_cols.items():
-            temp = df[['특성별(1)', '특성별(2)', f'{year}{suffix}']].copy()
-            temp.columns = ['범주', '집단', '섭취율']
-            temp['섭취빈도'] = freq_label
-            temp['연도'] = int(year)
-            df_long = pd.concat([df_long, temp], ignore_index=True)
-
-    # 숫자형으로 변환
-    df_long['섭취율'] = pd.to_numeric(df_long['섭취율'], errors='coerce')
-    return df_long
+    df = pd.read_csv(CSV_URL, encoding='cp949')  # 한글 인코딩
+    return df
 
 df = load_data()
 
-st.title("청소년 고카페인 음료 섭취 실태 (2016~2022)")
-group_type = st.selectbox("비교 기준 선택 (예: 성별, 시도, 학교급 등)", df['범주'].unique())
+st.title("청소년 고카페인 음료 섭취 실태 분석 (2016~2022)")
 
-# 선택된 기준에 따라 집단 필터
-subgroups = df[df['범주'] == group_type]['집단'].unique()
-selected_subgroups = st.multiselect("비교할 세부 집단 선택", subgroups, default=list(subgroups))
+# 기본 정보
+st.markdown("#### 데이터 미리보기")
+st.dataframe(df.head())
 
-freq_options = df['섭취빈도'].unique()
-selected_freq = st.selectbox("섭취 빈도 선택", freq_options)
+# 년도 필터
+years = sorted(df['년도'].unique())
+selected_year = st.selectbox("연도 선택", years)
 
-# 필터링
-filtered = df[
-    (df['범주'] == group_type) &
-    (df['집단'].isin(selected_subgroups)) &
-    (df['섭취빈도'] == selected_freq)
-]
+# 성별, 학교급 등 필터링 UI
+col1, col2 = st.columns(2)
+with col1:
+    selected_gender = st.selectbox("성별", df['성별'].unique())
+with col2:
+    selected_school = st.selectbox("학교급", df['학교급'].unique())
+
+# 필터 적용
+filtered_df = df[(df['년도'] == selected_year) &
+                 (df['성별'] == selected_gender) &
+                 (df['학교급'] == selected_school)]
 
 # 시각화
-fig = px.line(
-    filtered,
-    x='연도',
-    y='섭취율',
-    color='집단',
-    markers=True,
-    title=f"{group_type}별 '{selected_freq}' 섭취율 추세"
-)
-st.plotly_chart(fig, use_container_width=True)
+st.markdown("### 섭취 빈도별 분포")
+if not filtered_df.empty:
+    fig = px.bar(filtered_df, 
+                 x='섭취빈도', 
+                 y='백분율',
+                 color='성별',
+                 barmode='group',
+                 labels={'섭취빈도': '섭취 빈도', '백분율': '비율(%)'},
+                 title=f"{selected_year}년 {selected_gender} ({selected_school}) 고카페인 음료 섭취 분포")
+    st.plotly_chart(fig)
+else:
+    st.warning("해당 조건에 맞는 데이터가 없습니다.")
