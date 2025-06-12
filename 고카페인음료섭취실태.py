@@ -3,7 +3,8 @@ import pandas as pd
 import plotly.express as px
 
 # GitHub CSV URL로 교체하세요
-CSV_URL = "https://raw.githubusercontent.com/your-username/your-repo/main/고카페인_에너지__음료_이용_빈도(16182022).csv"
+CSV_URL = "https://raw.githubusercontent.com/your-username/your-repo/main/gogo.csv"
+
 
 @st.cache_data
 def load_data():
